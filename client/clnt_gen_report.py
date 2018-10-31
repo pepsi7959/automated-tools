@@ -44,8 +44,13 @@ class ClientGenerator:
 	
 			# Verify status
 			if r.status_code == 200 :
-				success_cnt += 1
-				print("generate report ID " + str(reportId) + " success")
+				response = r.json()
+				
+				if response["data"]["status"] != 0 : 
+					print("generate report ID " + str(reportId) + " failed: " + response["data"]["message"])
+				else :
+					success_cnt += 1
+					print("generate report ID " + str(reportId) + " success")
 			else:
 				print("generate report ID " + str(reportId) + " failed")
 
