@@ -29,16 +29,18 @@ class ClientGenerator:
 		# Parses to json format
 		#reportIds = json.loads(reportId_str); 
 		reportIds = r.json()
-		print(reportIds["reportIds"]);
+		print(reportIds["results"]);
 
 		success_cnt = 0;
 		total_cnt = 0;
 		# Call each of reports
-		for reportId in reportIds["reportIds"] :
+		for report in reportIds["results"] :
 			total_cnt += 1 
-			print("report ID: "+reportId)
+			reportId = report['GenerateID']
+			reportName = report['GenerateName']
+			reportIdName = "Report ID: " + str(reportId) + " Name: " + reportName
 			url = genReportURL + "/" + str(reportId) + "/" + datetime.datetime.today().strftime('%Y%m%d') + postfix
-			print("calling " + url)
+			print(reportIdName + " calling " + url)
 			r = requests.get(url) 
 			print("status: " + str(r.status_code))
 	
@@ -47,12 +49,12 @@ class ClientGenerator:
 				response = r.json()
 				
 				if response["data"]["status"] != 0 : 
-					print("generate report ID " + str(reportId) + " failed: " + response["data"]["message"])
+					print(reportIdName + " failed: " + response["data"]["message"])
 				else :
 					success_cnt += 1
-					print("generate report ID " + str(reportId) + " success")
+					print(reportIdName + " success")
 			else:
-				print("generate report ID " + str(reportId) + " failed")
+				print(reportIdName + " failed")
 
 		print("success: " + str(success_cnt) + " failed: " + str(total_cnt-success_cnt))
 
