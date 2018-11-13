@@ -70,7 +70,8 @@ class ClientGenerator:
 
 	def help(self) :
 		print "Example command:" 
-		print "python ./clnt_gen_report.py _0200 http://localhost:8000/gsurvey/admin/apis/allreports http://localhost:8000/gsurvey/admin/apis/genReportAsExcel" 
+		print "python ./clnt_gen_report.py <postfix> <base url>" 
+		print "python ./clnt_gen_report.py _0200 http://localhost:8000/gsurvey" 
 		 
 
 # Create Client Generator 
