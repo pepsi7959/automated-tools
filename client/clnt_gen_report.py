@@ -1,8 +1,8 @@
 '''
 Project		: G-Survey
 File name	: clnt_gen_report 
-Version		: 1.0.0
-Create Date	: 2018/10/26
+Version		: 1.0.1
+Create Date	: 2018/11/13
 Create by	: Narongsak Mala<narongsak.mala@dga.or.th>
 Email		: narongsak.mala@dga.or.th
 Description	: Client script for generating report
@@ -17,20 +17,19 @@ class ClientGenerator:
 	# mock report 
 	# reportId_str = '{"reportIds": [1,2,3,4]}';
 
-	# URL
-	allReportIdsURL = "http://localhost:8000/gsurvey/admin/apis/allreports"
-	genReportURL = "http://localhost:8000/gsurvey/admin/apis/genReportAsExcel"
-
-	def genReports(self, postfix, allReportIdsURL, genReportURL):
+	ALL_REPORTS = "admin/apis/allreports"
+	GEN_REPORT_AS_EXCEL = "admin/apis/genReportAsExcel"
+	
+	def genReports(self, postfix, baseUrl):
 	
 		try:
 			# Queries all report 
-			r = requests.get(allReportIdsURL);
-			print(r.json)
+			r = requests.get(baseUrl + "/" + self.ALL_REPORTS);
+			strResponse = r.text.encode('utf-8') 
+			print(strResponse)
 			
 			# Parses to json format
-			#reportIds = json.loads(reportId_str); 
-			reportIds = r.json()
+			reportIds = json.loads(strResponse); 
 			print(reportIds["results"]);
 			success_cnt = 0;
 			total_cnt = 0;
@@ -40,15 +39,21 @@ class ClientGenerator:
 				total_cnt += 1 
 				reportId = report['GenerateID']
 				reportName = report['GenerateName']
-				reportIdName = "Report ID: " + str(reportId) + " Name: " + reportName
-				url = genReportURL + "/" + str(reportId) + "/" + datetime.datetime.today().strftime('%Y%m%d') + postfix
+				reportIdName = str(total_cnt) +") "+ "Report ID: " + str(reportId) + " Name: " + reportName
+				url = baseUrl + "/" + self.GEN_REPORT_AS_EXCEL + "/" + str(reportId) + "/" + datetime.datetime.today().strftime('%Y%m%d') + postfix
 				print(reportIdName + " calling " + url)
 				r = requests.get(url) 
 				print("status: " + str(r.status_code))
-	
+				strResponse = r.text.encode('utf-8') 
+				print("response: " + str(strResponse))	
 				# Verify status
 				if r.status_code == 200 :
-					response = r.json()
+					
+					#response = json.load(strResponse)
+					response = r.json() 
+					if response is None :
+						print("Error: Cannot parse json") 
+						continue;	
 					if response["data"]["status"] != 0 : 
 						print(reportIdName + " failed: " + response["data"]["message"])
 					else :
@@ -59,7 +64,7 @@ class ClientGenerator:
 			print("success: " + str(success_cnt) + " failed: " + str(total_cnt-success_cnt))
 			return 0
 		except Exception as e:
-			print(str(e))
+			print("fatal: " + str(e))
 			return 1
 
 
@@ -72,9 +77,9 @@ class ClientGenerator:
 clntGen = ClientGenerator()
 retry = 0
 maxRetry = 3
-if len(sys.argv) > 3 :
+if len(sys.argv) > 2 :
 	while retry < maxRetry :
-		if clntGen.genReports(sys.argv[1], sys.argv[2], sys.argv[3]) == 0 :
+		if clntGen.genReports(sys.argv[1], sys.argv[2]) == 0 :
 			break	
 		else:
 			retry += 1
