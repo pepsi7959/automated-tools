@@ -38,19 +38,20 @@ class ClientGenerator:
 			for report in reportIds["results"] :
 				total_cnt += 1 
 				reportId = report['GenerateID']
-				reportName = report['GenerateName']
+				reportName = report['GenerateName'].encode('utf-8')
 				reportIdName = str(total_cnt) +") "+ "Report ID: " + str(reportId) + " Name: " + reportName
 				url = baseUrl + "/" + self.GEN_REPORT_AS_EXCEL + "/" + str(reportId) + "/" + datetime.datetime.today().strftime('%Y%m%d') + postfix
 				print(reportIdName + " calling " + url)
 				r = requests.get(url) 
 				print("status: " + str(r.status_code))
-				strResponse = r.text.encode('utf-8') 
-				print("response: " + str(strResponse))	
+				print("response: " + str(r.text))	
+				strResponse = r.text.encode('utf-8', 'ignore').strip()
+				print("response: " + strResponse)	
 				# Verify status
 				if r.status_code == 200 :
-					
-					#response = json.load(strResponse)
-					response = r.json() 
+					response = json.loads(strResponse)
+					#response["data"]["status"] = 0; 
+					#response = r.json() 
 					if response is None :
 						print("Error: Cannot parse json") 
 						continue;	
